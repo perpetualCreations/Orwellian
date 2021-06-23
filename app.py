@@ -56,6 +56,7 @@ class User(flask_login.UserMixin):
 def user_loader(user_id) -> User:
     """Flask Login function required for loading the admin user."""
     user = User()
+    # pylint: disable=invalid-name, attribute-defined-outside-init
     user.id = user_id
     return user
 
@@ -79,7 +80,11 @@ def update_listener() -> None:
     with application.app_context():
         flask_socketio.emit("eventUpdate", {
             "data": backend.get_all_logs(),
-            "id": "event-table",
+            "id": "event-table-content",
+            "type": "TABLE"}, json=True, broadcast=True)
+        flask_socketio.emit("eventUpdate", {
+            "data": backend.get_all_users(),
+            "id": "user-table-content",
             "type": "TABLE"}, json=True, broadcast=True)
 
 
@@ -91,22 +96,25 @@ command_interface_lock = threading.Lock()
 @socket_io.on("command")
 def command_handler(json_payload) -> None:
     """Handle websocket command request events from clients."""
-    # FIXME
     json_payload = str(json_payload).replace("'", '"')
     command_payload = json.loads(json_payload)
     command_interface_lock.acquire(True)
     if command_payload["requestType"] == "SIGNAL":
-        arbiter_command_interface.send(command_payload["command"])
+        error_string = "No SIGNAL responses defined. Request ignored."
+        print(error_string)
+        log_error_broadcaster(error_string)
     elif command_payload["requestType"] == "PAYLOAD":
-        arbiter_command_interface.send(command_payload["command"])
-        if arbiter_command_interface.receive() == "KEYERROR":
-            error_string = "Payload command " + \
-                command_payload["command"] + " is invalid."
+        if command_payload["command"] == "ADD_USER":
+            backend.add_user(command_payload["payload"])
+        elif command_payload["command"] == "REMOVE_USER":
+            backend.remove_user(command_payload["payload"])
+        elif command_payload["command"] == "LOG_IMAGE":
+            backend.log_user(None, None)
+        else:
+            error_string = 'Received invalid command, got "' + \
+                command_payload["command"] + '". Request ignored.'
             print(error_string)
             log_error_broadcaster(error_string)
-            command_interface_lock.release()
-            return None
-        arbiter_command_interface.send(command_payload["payload"])
     else:
         error_string = "Received invalid requestType, expected " + \
             '"SIGNAL" or "PAYLOAD", got ' + \
@@ -184,6 +192,7 @@ def login() -> any:
         if sha3_512(flask.request.form["password"].encode("ascii", "replace")
                     ).hexdigest() == config["CORE"]["PASSWORD"]:
             user = User()
+            # pylint: disable=attribute-defined-outside-init
             user.id = users["username"]
             flask_login.login_user(user)
             return flask.redirect(flask.url_for("index"))

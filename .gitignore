@@ -3,3 +3,7 @@ venv/*
 
 .vscode
 .vscode/*
+
+qr/*.png
+
+*.db

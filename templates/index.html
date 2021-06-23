@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>ORWELLIAN</title>
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+        <link rel="stylesheet" type="text/css" href="https://dreamerslegacy.xyz/css/schema.min.css" referrerpolicy="noreferrer">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='table.css') }}">
+    </head>
+    <body>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+        <script src="{{ url_for('static', filename='socket.js') }}"></script>
+        <script src="{{ url_for('static', filename='camera.js') }}"></script>
+        <div class="schema">
+            <h1>ORWELLIAN</h1>
+            <hr>
+            <div class="button-container">
+                <a class="button" href="{{ url_for('logout') }}">Logout</a>
+                <a class="button" href="{{ url_for('change_password') }}">Change Password</a>
+            </div>
+            <hr>
+            <!-- warning displayed only when JavaScript is disabled -->
+            <noscript class="message-box-container">
+                <div class="message-box">
+                    <h2>Warning!</h2>
+                    <p style="color: #ff4545;">JavaScript is required for ARBITER to process live I/O.</p>
+                </div>
+            </noscript>
+            <!-- error log hidden, unless an error is raised -->
+            <div class="message-box-container" id="errors" style="display: none;">
+                <div class="message-box" style="padding-left: 15%; padding-right: 15%;">
+                    <h2>Errors</h2>
+                    <p style="color: #ff4545;">Errors have occurred since initialization. Please be attentive to resolving them, otherwise some functions may be broken or disabled.</p>
+                    <button class = "collapsible">View Log</button>
+                    <div class = "content" style="overflow-x: auto; overflow-y: auto; white-space: nowrap;" id="error-log">
+                    </div>
+                    <p class="hint">// Some errors may have additional information not shown in the log, and are instead displayed in console.</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="column card">
+                    <h2>Users</h2>
+                    <hr>
+                    <div class="table-container">
+                        <table id="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-content"></tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    <h3>Add User</h3>
+                    <input type="text" id="add-user-input" required>
+                    <button onclick="add();">Add</button>
+                </div>
+                <div class="column card">
+                    <h2>Sign-in</h2>
+                    <button id="start-camera">Ready?</button>
+                    <div class="message-box-container" id="capture-phase" style="display: none;">
+                        <div class="message-box">
+                            <video id="video" width="640" height="480" autoplay></video>
+                            <button id="click-photo">Capture</button>
+                        </div>
+                    </div>
+                    <div class="message-box-container" id="review-phase" style="display: none;">
+                        <div class="message-box">
+                            <canvas id="canvas" width="640" height="480"></canvas>
+                            <button id="camera-reset">Done</button>
+                        </div>
+                    </div>
+                    <hr>
+                    <h2>Log</h2>
+                    <div class="table-container">
+                        <table id="event-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Was Login?</th>
+                                    <th>Tech. Timestamp</th>
+                                    <th>Date</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                            <tbody id="event-table-content"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -89,7 +89,27 @@ class Application:
 
     def get_all_logs(self) -> Union[None, list]:
         """Collect all log entries."""
-        return self.cursor.execute("SELECT * FROM log").fetchall()
+        # remove NID with POP, apply with list comp
+        return [x.pop(0) for x in self.cursor.execute("SELECT * FROM log"
+                                                      ).fetchall()]
+
+    def get_all_users(self) -> list:
+        """Collect all user entries."""
+        # remove NID with POP, apply with list comp
+        return [x.pop(0) for x in self.cursor.execute("SELECT * FROM users"
+                                                      ).fetchall()]
+
+    def get_all_logs_with_user(self, name: str) -> list:
+        """
+        Collect all log entries where the user matches given name.
+
+        :param name: human-readable name of user to be identified by
+        :type name: str
+        :return: list of all log entries with given name
+        :rtype: list
+        """
+        return self.cursor.execute("SELECT * FROM log WHERE user=:user",
+                                   {"user": name})
 
     @staticmethod
     def scan(image) -> Union[None, str]:
