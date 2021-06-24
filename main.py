@@ -18,6 +18,7 @@ from base64 import decodebytes as decodeBase64
 import qrcode
 import cv2
 from pyzbar import pyzbar
+from bandage import Supply, Patcher
 
 
 class Application:
@@ -176,3 +177,19 @@ class Application:
         for qrc in data:
             if qrc.type == "QRCODE":
                 return qrc.data.decode("utf-8")
+
+    @staticmethod
+    def check_updates() -> tuple:
+        """Use Bandage to check for updates."""
+        check = Supply(
+            "https://github.com/perpetualCreations/orwellian/releases/tag/"
+            + "BANDAGE/", "VERSION")
+        if check.realize()[0] == -1:
+            return (True, check.realize()[1])
+        else:
+            return False, "0.0.0.0"
+
+    @staticmethod
+    def apply_update(url) -> None:
+        """Use Bandage to apply updates."""
+        Patcher(url, ".")

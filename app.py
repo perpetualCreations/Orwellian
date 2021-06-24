@@ -15,6 +15,7 @@ from os import urandom
 from ast import literal_eval
 from hashlib import sha3_512
 from datetime import datetime, timezone
+from subprocess import Popen
 import flask
 import flask_login
 import flask_socketio
@@ -32,6 +33,20 @@ login_manager.login_view = "login"
 users = {"username": "admin"}
 socket_io = flask_socketio.SocketIO(application)
 command_interface_lock = threading.Lock()
+
+if literal_eval(config["CORE"]["UPDATE"]) is True:
+    update_available, url = backend.check_updates()
+    if update_available is True:
+        backend.apply_update(url)
+        print("Orwellian is restarting, applied new update.\n"
+              "See https://github.com/perpetualCreations/orwellian/releases "
+              "for release information and changelog.")
+        if literal_eval(config["CORE"]["UPDATE"]) is True:
+            Popen("./startserver.sh")
+        else:
+            print("[/!\\ Automatic restart is disabled.]\n"
+                  "Please manually start the server again.")
+        exit(0)
 
 # all error messages get appended to this list, new clients will receive all
 # error messages in list, to "catch them up"

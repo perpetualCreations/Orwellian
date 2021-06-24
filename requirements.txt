@@ -1,13 +1,11 @@
 qrcode
 opencv-contrib-python
-imutils
 Flask
 Flask-Login
 Flask-SocketIO
 jinja2
 gevent
 gevent-websocket
-swbs
-Pillow
 pyzbar
 gunicorn
+bandage
