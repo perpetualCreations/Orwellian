@@ -20,9 +20,10 @@ import flask_login
 import flask_socketio
 import main
 
-backend = main.Application("database.db")
 config = configparser.ConfigParser()
 config.read("main.cfg")
+backend = main.Application("database.db",
+                           literal_eval(config["CORE"]["DEBUG"]))
 application = flask.Flask(__name__)
 application.secret_key = urandom(4096)
 login_manager = flask_login.LoginManager()
@@ -30,6 +31,7 @@ login_manager.init_app(application)
 login_manager.login_view = "login"
 users = {"username": "admin"}
 socket_io = flask_socketio.SocketIO(application)
+command_interface_lock = threading.Lock()
 
 # all error messages get appended to this list, new clients will receive all
 # error messages in list, to "catch them up"
@@ -66,31 +68,36 @@ def connect_handler() -> any:
     """Handle websocket connections, checking for login auth."""
     if flask_login.current_user.is_authenticated is not True:
         return False
-    else:
-        with application.app_context():
-            for error in errors:
-                flask_socketio.emit("logError", error, json=True)
-            flask_socketio.emit("eventUpdate", backend.get_all_logs(),
-                                json=True)
+    with application.app_context():
+        for error in errors:
+            flask_socketio.emit("logError", error, json=True)
+        flask_socketio.emit("eventUpdate", {
+            "data": backend.get_all_logs(),
+            "id": "event-table-content",
+            "type": "TABLE"}, json=True)
+        flask_socketio.emit("eventUpdate", {
+            "data": backend.get_all_users(),
+            "id": "user-table-content",
+            "type": "TABLE"}, json=True)
 
 
 def update_listener() -> None:
     """Thread for update events."""
-    backend.database_updated_event.wait()
-    with application.app_context():
-        flask_socketio.emit("eventUpdate", {
-            "data": backend.get_all_logs(),
-            "id": "event-table-content",
-            "type": "TABLE"}, json=True, broadcast=True)
-        flask_socketio.emit("eventUpdate", {
-            "data": backend.get_all_users(),
-            "id": "user-table-content",
-            "type": "TABLE"}, json=True, broadcast=True)
+    while True:
+        backend.database_updated_event.wait()
+        with application.app_context():
+            flask_socketio.emit("eventUpdate", {
+                "data": backend.get_all_logs(),
+                "id": "event-table-content",
+                "type": "TABLE"}, json=True, broadcast=True, namespace="/")
+            flask_socketio.emit("eventUpdate", {
+                "data": backend.get_all_users(),
+                "id": "user-table-content",
+                "type": "TABLE"}, json=True, broadcast=True, namespace="/")
+        backend.database_updated_event.clear()
 
 
-# interface inits
-threading.Thread(target=update_listener, args=()).start()
-command_interface_lock = threading.Lock()
+threading.Thread(target=update_listener).start()
 
 
 @socket_io.on("command")
@@ -109,7 +116,8 @@ def command_handler(json_payload) -> None:
         elif command_payload["command"] == "REMOVE_USER":
             backend.remove_user(command_payload["payload"])
         elif command_payload["command"] == "LOG_IMAGE":
-            backend.log_user(None, None)
+            name = backend.scan(command_payload["payload"])
+            backend.log_user(name, backend.was_last_signin_login(name))
         else:
             error_string = 'Received invalid command, got "' + \
                 command_payload["command"] + '". Request ignored.'
@@ -134,7 +142,7 @@ def index() -> any:
 
     Requires login.
 
-    :return: any
+    :rtype: any
     """
     return flask.render_template("index.html")
 

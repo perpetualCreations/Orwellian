@@ -8,3 +8,5 @@ jinja2
 gevent
 gevent-websocket
 swbs
+Pillow
+pyzbar

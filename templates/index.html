@@ -4,14 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>ORWELLIAN</title>
-        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
         <link rel="stylesheet" type="text/css" href="https://dreamerslegacy.xyz/css/schema.min.css" referrerpolicy="noreferrer">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='table.css') }}">
     </head>
     <body>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-        <script src="{{ url_for('static', filename='socket.js') }}"></script>
-        <script src="{{ url_for('static', filename='camera.js') }}"></script>
         <div class="schema">
             <h1>ORWELLIAN</h1>
             <hr>
@@ -46,6 +42,7 @@
                         <table id="user-table">
                             <thead>
                                 <tr>
+                                    <th>NID</th>
                                     <th>Name</th>
                                     <th>Options</th>
                                 </tr>
@@ -55,22 +52,29 @@
                     </div>
                     <hr>
                     <h3>Add User</h3>
-                    <input type="text" id="add-user-input" required>
-                    <button onclick="add();">Add</button>
+                    <div class="row">
+                        <input type="text" id="add-user-input" required>
+                        <button onclick="add();" style="padding: 0.25em 1em 0.25em 1em; margin-left: 0.5em;">Add</button>
+                    </div>
                 </div>
                 <div class="column card">
                     <h2>Sign-in</h2>
-                    <button id="start-camera">Ready?</button>
+                    <p class="hint">// Confirm below to start the login process. Please prepare your QR code badge.</p>
+                    <button id="camera-ready" onclick="startCameraPreview();">Ready?</button>
                     <div class="message-box-container" id="capture-phase" style="display: none;">
-                        <div class="message-box">
-                            <video id="video" width="640" height="480" autoplay></video>
-                            <button id="click-photo">Capture</button>
+                        <div class="message-box row" style="padding: 0em; justify-content: center;">
+                            <video id="video-stream-player" width="320" height="240" autoplay style="padding: 0.5em; object-fit: fill;"></video>
+                        </div>
+                        <div class="row" style="justify-content: center; padding: 0.5em;">
+                            <button onclick="collectCamera();">Capture</button>
                         </div>
                     </div>
                     <div class="message-box-container" id="review-phase" style="display: none;">
-                        <div class="message-box">
-                            <canvas id="canvas" width="640" height="480"></canvas>
-                            <button id="camera-reset">Done</button>
+                        <div class="message-box row" style="padding: 0em; justify-content: center;">
+                            <canvas id="canvas" width="320" height="240" autoplay style="padding: 0.5em; object-fit: fill;"></canvas>
+                        </div>
+                        <div class="row" style="justify-content: center; padding: 0.5em;">
+                            <button onclick="resetCamera();">Done</button>
                         </div>
                     </div>
                     <hr>
@@ -79,11 +83,11 @@
                         <table id="event-table">
                             <thead>
                                 <tr>
+                                    <th>NID</th>
                                     <th>Name</th>
                                     <th>Was Login?</th>
-                                    <th>Tech. Timestamp</th>
+                                    <th>Time</th>
                                     <th>Date</th>
-                                    <th>Options</th>
                                 </tr>
                             </thead>
                             <tbody id="event-table-content"></tbody>
@@ -93,4 +97,7 @@
             </div>
         </div>
     </body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <script src="{{ url_for('static', filename='camera.js') }}"></script>
 </html>

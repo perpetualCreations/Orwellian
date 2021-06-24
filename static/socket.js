@@ -1,10 +1,8 @@
 var socket = io();
-var tableDataCache = [];
-
 socket.on("eventUpdate", data => {
     // there should NEVER be STATE updates, they aren't defined.
     if (data["type"] == "STATE") {
-        console.log("???")
+        console.log("???");
     }
     else if (data["type"] == "TABLE") {
         // scripting for populating target table
@@ -15,15 +13,15 @@ socket.on("eventUpdate", data => {
                 if (data["data"][row][column] == null) {
                     data["data"][row][column] = "";
                 }
+                else if (data["id"] == "event-table-content" && column == 2) {
+                    data["data"][row][column] = Boolean(data["data"][row][column]);
+                }
                 tableRow.innerHTML += ("<td>" + data["data"][row][column] + "</td>");
             }
             if (data["id"] == "user-table-content") {
-                // add select button to all agents
-                tableRow.innerHTML += ('<td><button onclick="' + "remove('" + data["data"][row][0] + "');" + '">Remove</button></td>'); 
-                document.getElementById(data["id"]).appendChild(tableRow);
-                // when table content is for agents, cache into variable
-                tableDataCache = data["data"];
+                tableRow.innerHTML += ('<td><button onclick="' + "remove('" + data["data"][row][1] + "');" + '">Remove</button></td>');
             }
+            document.getElementById(data["id"]).appendChild(tableRow);
         }
     }
 });

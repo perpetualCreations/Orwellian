@@ -7,3 +7,8 @@ venv/*
 qr/*.png
 
 *.db
+
+__pycache__
+__pycache__/*
+
+imagecache/*.jpeg
