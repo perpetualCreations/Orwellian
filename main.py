@@ -158,7 +158,8 @@ class Application:
         if name is None:
             return True
         try:
-            return not bool(self.get_all_logs_with_user(name)[0][2])
+            entries = self.get_all_logs_with_user(name)
+            return not bool(entries[len(entries) - 1][2])
         except IndexError:
             return True
 
