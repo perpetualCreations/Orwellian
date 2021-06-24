@@ -10,3 +10,4 @@ gevent-websocket
 swbs
 Pillow
 pyzbar
+gunicorn
